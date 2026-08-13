@@ -1,0 +1,16 @@
+@page "/online"
+@rendermode InteractiveServer
+
+<PageTitle>Gorillas — Online</PageTitle>
+
+<div class="page-intro">
+    <h1>Online</h1>
+    <p>Create a game and share the code, or join a friend. Watchers welcome.</p>
+</div>
+
+<OnlineGame InitialCode="@Code" />
+
+@code {
+    [SupplyParameterFromQuery(Name = "code")]
+    public string? Code { get; set; }
+}

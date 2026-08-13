@@ -1,0 +1,19 @@
+@implements IDisposable
+
+<GorillasBoard Session="_session" />
+
+@code {
+    private readonly LocalGameSession _session = new();
+
+    [Parameter]
+    public string PlayerOneName { get; set; } = "Player 1";
+
+    [Parameter]
+    public string PlayerTwoName { get; set; } = "Player 2";
+
+    protected override void OnInitialized() => _session.Start(PlayerOneName, PlayerTwoName);
+
+    public void Dispose()
+    {
+    }
+}

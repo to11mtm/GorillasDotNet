@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/_/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="plan/base-request.md" />
+    <File Path="plan/implementation-plan.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Gorillas.Actors/Gorillas.Actors.csproj" />
+    <Project Path="src/Gorillas.Client/Gorillas.Client.csproj" />
+    <Project Path="src/Gorillas.Contracts/Gorillas.Contracts.csproj" />
+    <Project Path="src/Gorillas.Core/Gorillas.Core.csproj" />
+    <Project Path="src/Gorillas.Data/Gorillas.Data.csproj" />
+    <Project Path="src/Gorillas.Server/Gorillas.Server.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Gorillas.Actors.Tests/Gorillas.Actors.Tests.csproj" />
+    <Project Path="tests/Gorillas.Client.Tests/Gorillas.Client.Tests.csproj" />
+    <Project Path="tests/Gorillas.Core.Tests/Gorillas.Core.Tests.csproj" />
+    <Project Path="tests/Gorillas.Data.Tests/Gorillas.Data.Tests.csproj" />
+  </Folder>
+</Solution>

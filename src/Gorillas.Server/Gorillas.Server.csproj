@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gorillas.Core\Gorillas.Core.csproj" />
+    <ProjectReference Include="..\Gorillas.Contracts\Gorillas.Contracts.csproj" />
+    <ProjectReference Include="..\Gorillas.Client\Gorillas.Client.csproj" />
+    <ProjectReference Include="..\Gorillas.Data\Gorillas.Data.csproj" />
+    <ProjectReference Include="..\Gorillas.Actors\Gorillas.Actors.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Akka.Hosting" />
+    <PackageReference Include="Akka.Persistence.Sql.Hosting" />
+  </ItemGroup>
+
+</Project>

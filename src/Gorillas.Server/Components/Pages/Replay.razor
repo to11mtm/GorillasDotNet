@@ -1,0 +1,16 @@
+@page "/replay/{GameId}"
+@rendermode InteractiveServer
+
+<PageTitle>Gorillas — Replay</PageTitle>
+
+<div class="page-intro">
+    <h1>Replay</h1>
+    <a class="cta secondary" href="/replays">All replays</a>
+</div>
+
+<ReplayViewer GameId="@GameId" />
+
+@code {
+    [Parameter]
+    public string GameId { get; set; } = string.Empty;
+}

@@ -1,0 +1,297 @@
+.gorillas-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 960px;
+    margin: 0 auto;
+    font-family: "Consolas", "Courier New", monospace;
+    color: #e8e8e8;
+}
+
+.gorillas-scoreboard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.4rem 0.6rem;
+    background: #101024;
+    border: 2px solid #2b2b50;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.85rem;
+}
+
+.gorillas-scoreboard .score.active {
+    color: #ffe94a;
+}
+
+.gorillas-scoreboard .round {
+    color: #8a8ab0;
+    font-size: 0.75rem;
+}
+
+.gorillas-stage {
+    background: #000038;
+    border: 2px solid #2b2b50;
+    line-height: 0;
+}
+
+.gorillas-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 320 / 200;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+.gorillas-hud {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #b8b8d0;
+}
+
+.gorillas-hud .wind {
+    color: #ff6b6b;
+}
+
+.gorillas-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.gorillas-controls label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8a8ab0;
+}
+
+.gorillas-controls input {
+    width: 7rem;
+    padding: 0.35rem 0.5rem;
+    background: #101024;
+    border: 2px solid #2b2b50;
+    color: #ffe94a;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.gorillas-controls button {
+    padding: 0.45rem 1.2rem;
+    background: #ffe94a;
+    border: 2px solid #ffe94a;
+    color: #101024;
+    font-family: inherit;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+}
+
+.gorillas-controls button:hover {
+    background: #fff6a8;
+}
+
+.gorillas-error {
+    color: #ff6b6b;
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.gorillas-lobby, .gorillas-online {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 960px;
+    margin: 0 auto;
+    font-family: "Consolas", "Courier New", monospace;
+    color: #e8e8e8;
+}
+
+.gorillas-lobby label, .lobby-join label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8a8ab0;
+}
+
+.gorillas-lobby input, .lobby-join input {
+    padding: 0.35rem 0.5rem;
+    background: #101024;
+    border: 2px solid #2b2b50;
+    color: #ffe94a;
+    font-family: inherit;
+    font-size: 1rem;
+    text-transform: uppercase;
+}
+
+.lobby-actions, .lobby-join {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.gorillas-lobby button, .gorillas-online button {
+    padding: 0.45rem 1.2rem;
+    background: #ffe94a;
+    border: 2px solid #ffe94a;
+    color: #101024;
+    font-family: inherit;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+}
+
+.gorillas-lobby button.secondary {
+    background: transparent;
+    color: #ffe94a;
+}
+
+.gorillas-lobby button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.online-bar {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.4rem 0.6rem;
+    background: #101024;
+    border: 2px solid #2b2b50;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.online-bar .code strong {
+    color: #ffe94a;
+    letter-spacing: 0.2em;
+}
+
+.online-bar .link.ok { color: #6bff8c; }
+.online-bar .link.warn { color: #ffb347; }
+
+.participants {
+    list-style: none;
+    display: flex;
+    gap: 0.75rem;
+    padding: 0;
+    margin: 0;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.participants li.offline { opacity: 0.45; }
+
+.participants .tag {
+    color: #8a8ab0;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+.replay-transport {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.replay-transport button {
+    padding: 0.35rem 0.7rem;
+    min-width: 2.5rem;
+}
+
+.replay-transport button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.replay-scrub {
+    flex: 1 1 12rem;
+    accent-color: #ffe94a;
+}
+
+.replay-speed {
+    padding: 0.35rem 0.5rem;
+    background: #101024;
+    border: 2px solid #2b2b50;
+    color: #ffe94a;
+    font-family: inherit;
+}
+
+.replay-loading {
+    max-width: 960px;
+    margin: 0 auto;
+    color: #8a8ab0;
+    font-family: "Consolas", "Courier New", monospace;
+}
+
+.replay-table {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    border-collapse: collapse;
+    font-family: "Consolas", "Courier New", monospace;
+    color: #e8e8e8;
+    font-size: 0.85rem;
+}
+
+.replay-table th {
+    text-align: left;
+    color: #8a8ab0;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    padding: 0.4rem 0.5rem;
+    border-bottom: 2px solid #2b2b50;
+}
+
+.replay-table td {
+    padding: 0.5rem;
+    border-bottom: 1px solid #1c1c34;
+}
+
+.replay-table td.code {
+    color: #ffe94a;
+    letter-spacing: 0.15em;
+}
+
+.cta.small {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.cta.secondary {
+    background: transparent;
+    color: #ffe94a;
+    border: 2px solid #ffe94a;
+}
+
+.lobby-solo {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.lobby-solo select {
+    padding: 0.35rem 0.5rem;
+    background: #101024;
+    border: 2px solid #2b2b50;
+    color: #ffe94a;
+    font-family: inherit;
+    font-size: 1rem;
+}

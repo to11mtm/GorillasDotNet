@@ -1,0 +1,123 @@
+@implements IDisposable
+@inject IReplayCatalog Catalog
+
+@if (_session is null)
+{
+    <p class="replay-loading">@(_error ?? "Loading replay...")</p>
+}
+else
+{
+    <div class="gorillas-online">
+        <div class="online-bar">
+            <span class="code">Replay <strong>@_session.GameCode</strong></span>
+            <span class="role">Shot @_session.ShotsPlayed of @_session.ShotCount</span>
+            <span class="link ok">@(_session.AtEnd ? "finished" : _session.IsPlaying ? "playing" : "paused")</span>
+        </div>
+
+        <GorillasBoard Session="_session" PlaybackSpeed="_session.Speed" />
+
+        <div class="replay-transport">
+            <button type="button" @onclick="Restart" title="Restart">&#x23EE;</button>
+            <button type="button" @onclick="() => _session.SeekToShot(-1)" title="Previous shot">&#x23EA;</button>
+
+            @if (_session.IsPlaying)
+            {
+                <button type="button" @onclick="Pause" title="Pause">&#x23F8;</button>
+            }
+            else
+            {
+                <button type="button" @onclick="PlayAsync" disabled="@_session.AtEnd" title="Play">&#x25B6;</button>
+            }
+
+            <button type="button" @onclick="() => _session.StepForward()" disabled="@_session.AtEnd" title="Step">&#x23ED;</button>
+            <button type="button" @onclick="() => _session.SeekToShot(1)" title="Next shot">&#x23E9;</button>
+
+            <input type="range" min="0" max="@_session.Length" step="1" value="@_session.Cursor"
+                   @onchange="OnScrub" class="replay-scrub" />
+
+            <select @onchange="OnSpeedChanged" class="replay-speed">
+                @foreach (var speed in Speeds)
+                {
+                    <option value="@speed" selected="@(Math.Abs(_session.Speed - speed) < 0.01)">@(speed)x</option>
+                }
+            </select>
+        </div>
+    </div>
+}
+
+@code {
+    private static readonly double[] Speeds = [0.5, 1, 2, 4];
+
+    private ReplaySession? _session;
+    private string? _error;
+
+    [Parameter]
+    [EditorRequired]
+    public string GameId { get; set; } = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_session is not null)
+        {
+            return;
+        }
+
+        try
+        {
+            var log = await Catalog.LoadAsync(GameId);
+
+            if (log.Count == 0)
+            {
+                _error = "That match has no recorded events.";
+                return;
+            }
+
+            _session = new ReplaySession(log);
+            _session.Changed += OnChanged;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Could not load the replay: {ex.Message}";
+        }
+    }
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private async Task PlayAsync()
+    {
+        if (_session is not null)
+        {
+            await _session.PlayAsync();
+        }
+    }
+
+    private void Pause() => _session?.Pause();
+
+    private void Restart() => _session?.Restart();
+
+    private void OnScrub(ChangeEventArgs args)
+    {
+        if (_session is not null && int.TryParse(args.Value?.ToString(), out var cursor))
+        {
+            _session.SeekTo(cursor);
+        }
+    }
+
+    private void OnSpeedChanged(ChangeEventArgs args)
+    {
+        if (_session is not null && double.TryParse(args.Value?.ToString(), out var speed))
+        {
+            _session.Speed = speed;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_session is not null)
+        {
+            _session.Changed -= OnChanged;
+            _session.Pause();
+        }
+    }
+}

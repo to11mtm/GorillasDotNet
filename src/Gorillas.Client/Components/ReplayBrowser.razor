@@ -1,0 +1,58 @@
+@inject IReplayCatalog Catalog
+
+@if (_replays is null)
+{
+    <p class="replay-loading">Loading matches...</p>
+}
+else if (_replays.Count == 0)
+{
+    <p class="replay-loading">No matches recorded yet. Play one online and it will show up here.</p>
+}
+else
+{
+    <table class="replay-table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Players</th>
+                <th>Status</th>
+                <th>Shots</th>
+                <th>Played</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var replay in _replays)
+            {
+                <tr>
+                    <td class="code">@replay.GameCode</td>
+                    <td>@Players(replay)</td>
+                    <td>@Outcome(replay)</td>
+                    <td>@replay.EventCount</td>
+                    <td>@replay.CreatedAt.ToLocalTime().ToString("g")</td>
+                    <td><a class="cta small" href="@($"/replay/{replay.GameId}")">Watch</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IReadOnlyList<ReplaySummary>? _replays;
+
+    protected override async Task OnInitializedAsync() => _replays = await Catalog.ListAsync();
+
+    private static string Players(ReplaySummary replay) =>
+        replay.PlayerNames.Count == 0 ? "—" : string.Join(" vs ", replay.PlayerNames);
+
+    private static string Outcome(ReplaySummary replay)
+    {
+        if (replay.WinnerSlot is not { } winner)
+        {
+            return replay.Status;
+        }
+
+        var name = winner < replay.PlayerNames.Count ? replay.PlayerNames[winner] : $"Seat {winner + 1}";
+        return $"{name} won";
+    }
+}

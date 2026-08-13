@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gorillas.Core\Gorillas.Core.csproj" />
+    <ProjectReference Include="..\Gorillas.Data\Gorillas.Data.csproj" />
+    <ProjectReference Include="..\Gorillas.Contracts\Gorillas.Contracts.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Akka" />
+    <PackageReference Include="Akka.Persistence" />
+    <PackageReference Include="Akka.Persistence.Query" />
+    <PackageReference Include="Akka.Persistence.Sql" />
+    <PackageReference Include="Akka.Hosting" />
+    <PackageReference Include="Akka.Persistence.Sql.Hosting" />
+  </ItemGroup>
+
+</Project>

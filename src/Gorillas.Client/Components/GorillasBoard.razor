@@ -1,0 +1,246 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<div class="gorillas-shell">
+    <div class="gorillas-scoreboard">
+        <span class="score @(HighlightSlot(0))">@NameOf(0) <strong>@ScoreOf(0)</strong></span>
+        <span class="round">@RoundLabel</span>
+        <span class="score @(HighlightSlot(1))"><strong>@ScoreOf(1)</strong> @NameOf(1)</span>
+    </div>
+
+    <div class="gorillas-stage">
+        <canvas @ref="_canvas" class="gorillas-canvas"></canvas>
+    </div>
+
+    <div class="gorillas-hud">
+        <span class="wind">Wind @WindLabel</span>
+        <span class="status">@StatusText</span>
+    </div>
+
+    @if (ShowAimControls)
+    {
+        <form @onsubmit="ThrowAsync" @onsubmit:preventDefault class="gorillas-controls">
+            <label>
+                Angle
+                <input type="number" min="1" max="89" step="1" @bind="_aim.Angle" />
+            </label>
+            <label>
+                Velocity
+                <input type="number" min="1" max="@Session.Settings.MaxVelocity" step="1" @bind="_aim.Velocity" />
+            </label>
+            <button type="submit">Throw</button>
+        </form>
+    }
+    else if (ShowNextRound)
+    {
+        <div class="gorillas-controls">
+            <button type="button" @onclick="NextRoundAsync">Next round</button>
+        </div>
+    }
+
+    @if (Session.LastError is { } error)
+    {
+        <p class="gorillas-error">@error</p>
+    }
+</div>
+
+@code {
+    private readonly AimModel _aim = new();
+    private readonly Dictionary<int, AimModel> _lastAim = [];
+
+    private ElementReference _canvas;
+    private IJSObjectReference? _module;
+    private DotNetObjectReference<GorillasBoard>? _selfRef;
+    private bool _animating;
+    private bool _initialised;
+
+    [Parameter]
+    [EditorRequired]
+    public IGameSession Session { get; set; } = default!;
+
+    [Parameter]
+    public string Theme { get; set; } = "retro";
+
+    /// <summary>Scales the flight animation. Used by the replay viewer's speed control.</summary>
+    [Parameter]
+    public double PlaybackSpeed { get; set; } = 1;
+
+    private bool ShowAimControls => Session.CanAct && !_animating;
+
+    private bool ShowNextRound =>
+        Session.State.Phase == GamePhase.RoundOver && !_animating && !Session.IsSpectator;
+
+    private string RoundLabel => Session.State.RoundNumber == 0
+        ? "Waiting for players"
+        : $"Round {Session.State.RoundNumber} · first to {Session.Settings.RoundsToWin}";
+
+    private string WindLabel
+    {
+        get
+        {
+            var wind = Session.State.Wind;
+            var arrow = wind switch
+            {
+                > 0.05 => "\u2192",
+                < -0.05 => "\u2190",
+                _ => "\u00b7",
+            };
+
+            return $"{arrow} {Math.Abs(wind):0.0}";
+        }
+    }
+
+    private string StatusText
+    {
+        get
+        {
+            if (_animating)
+            {
+                return "Banana away...";
+            }
+
+            return Session.State.Phase switch
+            {
+                GamePhase.WaitingForPlayers => "Waiting for an opponent to join...",
+                GamePhase.MatchOver => $"{NameOf(Session.State.MatchWinnerSlot ?? 0)} wins the match!",
+                GamePhase.RoundOver => $"{NameOf(WinnerOfRound)} takes the round.",
+                _ when Session.IsSpectator => $"{NameOf(Session.State.ActiveSlot)} is taking aim.",
+                _ when Session.CanAct => "Your shot.",
+                _ => $"Waiting for {NameOf(Session.State.ActiveSlot)}...",
+            };
+        }
+    }
+
+    private int WinnerOfRound => Session.DefeatedSlot is { } defeated ? 1 - defeated : Session.State.ActiveSlot;
+
+    protected override void OnInitialized()
+    {
+        Session.Changed += OnSessionChanged;
+        Session.ThrowStarted += OnThrowStarted;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Gorillas.Client/gorillas-renderer.js");
+            _selfRef = DotNetObjectReference.Create(this);
+            await _module.InvokeVoidAsync("init", _canvas);
+            _initialised = true;
+            await PushSceneAsync();
+        }
+    }
+
+    /// <summary>Session changes can arrive from a background SignalR thread, so marshal them.</summary>
+    private void OnSessionChanged() => _ = InvokeAsync(async () =>
+    {
+        await PushSceneAsync();
+        StateHasChanged();
+    });
+
+    private void OnThrowStarted(ThrowAnimation animation) => _ = InvokeAsync(async () =>
+    {
+        _animating = true;
+        RememberAim(animation.Slot);
+        StateHasChanged();
+
+        await PushSceneAsync();
+
+        if (_module is not null)
+        {
+            await _module.InvokeVoidAsync("playThrow", _canvas, animation, _selfRef, PlaybackSpeed);
+        }
+        else
+        {
+            await OnThrowAnimationComplete();
+        }
+    });
+
+    [JSInvokable]
+    public async Task OnThrowAnimationComplete()
+    {
+        _animating = false;
+        Session.CompleteThrow();
+        await PushSceneAsync();
+        StateHasChanged();
+    }
+
+    private async Task ThrowAsync() => await Session.ThrowAsync(_aim.Angle, _aim.Velocity);
+
+    private async Task NextRoundAsync()
+    {
+        await Session.NextRoundAsync();
+        RecallAim();
+    }
+
+    private void RememberAim(int slot) =>
+        _lastAim[slot] = new AimModel { Angle = _aim.Angle, Velocity = _aim.Velocity };
+
+    /// <summary>Each player resumes from their previous aim, as in the original.</summary>
+    private void RecallAim()
+    {
+        if (Session.MySlot is { } slot && _lastAim.TryGetValue(slot, out var previous))
+        {
+            _aim.Angle = previous.Angle;
+            _aim.Velocity = previous.Velocity;
+        }
+    }
+
+    private async Task PushSceneAsync()
+    {
+        if (!_initialised || _module is null)
+        {
+            return;
+        }
+
+        var banner = Session.State.Phase switch
+        {
+            GamePhase.MatchOver => new SceneBanner($"{NameOf(Session.State.MatchWinnerSlot ?? 0)} WINS!", "win"),
+            GamePhase.RoundOver => new SceneBanner($"{NameOf(WinnerOfRound)} scores", "win"),
+            GamePhase.WaitingForPlayers when Session.GameCode is { Length: > 0 } code => new SceneBanner($"CODE {code}", "info"),
+            _ => null,
+        };
+
+        var scene = SceneBuilder.Build(Session.State, Theme, banner, Session.DefeatedSlot);
+        await _module.InvokeVoidAsync("setScene", _canvas, scene);
+    }
+
+    private string HighlightSlot(int slot) =>
+        Session.State.Phase == GamePhase.Aiming && Session.State.ActiveSlot == slot ? "active" : string.Empty;
+
+    private int ScoreOf(int slot) => Session.State.Scores.Count > slot ? Session.State.Scores[slot] : 0;
+
+    private string NameOf(int slot)
+    {
+        var nickname = Session.State.PlayerInSlot(slot)?.Nickname ?? $"Player {slot + 1}";
+        return Session.MySlot == slot ? $"{nickname} (you)" : nickname;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Session.Changed -= OnSessionChanged;
+        Session.ThrowStarted -= OnThrowStarted;
+
+        if (_module is not null)
+        {
+            try
+            {
+                await _module.InvokeVoidAsync("dispose", _canvas);
+                await _module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // The circuit is already gone; nothing to clean up on the client.
+            }
+        }
+
+        _selfRef?.Dispose();
+    }
+
+    private sealed class AimModel
+    {
+        public double Angle { get; set; } = 45;
+
+        public double Velocity { get; set; } = 60;
+    }
+}

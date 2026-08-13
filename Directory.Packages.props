@@ -1,0 +1,43 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <ItemGroup Label="Actors">
+    <PackageVersion Include="Akka" Version="1.5.70" />
+    <PackageVersion Include="Akka.Persistence" Version="1.5.70" />
+    <PackageVersion Include="Akka.Persistence.Query" Version="1.5.70" />
+    <PackageVersion Include="Akka.Persistence.Sql" Version="1.5.70" />
+    <PackageVersion Include="Akka.Hosting" Version="1.5.70" />
+    <PackageVersion Include="Akka.Persistence.Sql.Hosting" Version="1.5.70" />
+    <PackageVersion Include="Akka.TestKit.Xunit2" Version="1.5.70" />
+    <!-- Akka transitively pulls OpenTelemetry.Api 1.10.0, which has known advisories
+         (GHSA-8785-wc3w-h8q6, GHSA-g94r-2vxg-569j). Lifted via transitive pinning. -->
+    <PackageVersion Include="OpenTelemetry.Api" Version="1.17.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Testing">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+  </ItemGroup>
+
+  <ItemGroup Label="Blazor">
+    <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.7" />
+  </ItemGroup>
+
+  <!-- linq2db is pinned to 5.4.1.9 because Akka.Persistence.Sql depends on that exact
+       major version; moving to 6.x would break the actor persistence layer. -->
+  <ItemGroup Label="Data">
+    <PackageVersion Include="linq2db" Version="5.4.1.9" />
+    <PackageVersion Include="linq2db.AspNet" Version="5.4.1.9" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
+  </ItemGroup>
+
+</Project>
