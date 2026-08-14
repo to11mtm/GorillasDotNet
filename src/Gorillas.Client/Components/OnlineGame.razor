@@ -10,30 +10,40 @@
             <input type="text" maxlength="20" placeholder="Ada" @bind="_nickname" disabled="@(!_ready)" />
         </label>
 
-        <div class="lobby-actions">
-            <button type="button" @onclick="CreateAsync" disabled="@(_busy || !_ready)">Create a game</button>
-        </div>
+        @if (Mode == LobbyMode.Solo)
+        {
+            <div class="lobby-solo">
+                <label>
+                    Difficulty
+                    <select @bind="_difficulty" disabled="@(!_ready)">
+                        <option value="@AiDifficulty.Easy">Easy</option>
+                        <option value="@AiDifficulty.Normal">Normal</option>
+                        <option value="@AiDifficulty.Hard">Hard</option>
+                    </select>
+                </label>
+                <button type="button" @onclick="PlayComputerAsync" disabled="@(_busy || !_ready)">Start game</button>
+            </div>
 
-        <div class="lobby-solo">
-            <label>
-                Computer opponent
-                <select @bind="_difficulty" disabled="@(!_ready)">
-                    <option value="@AiDifficulty.Easy">Easy</option>
-                    <option value="@AiDifficulty.Normal">Normal</option>
-                    <option value="@AiDifficulty.Hard">Hard</option>
-                </select>
-            </label>
-            <button type="button" @onclick="PlayComputerAsync" disabled="@(_busy || !_ready)">Play the computer</button>
-        </div>
+            <p class="lobby-hint">Rather play a person? <a href="/online">Play online</a> or <a href="/play">share a keyboard</a>.</p>
+        }
+        else
+        {
+            <div class="lobby-actions">
+                <button type="button" @onclick="CreateAsync" disabled="@(_busy || !_ready)">Create a game</button>
+                <span class="lobby-hint">and send the invite link to a friend</span>
+            </div>
 
-        <div class="lobby-join">
-            <label>
-                Game code
-                <input type="text" maxlength="10" placeholder="BAN-7Q3" @bind="_code" disabled="@(!_ready)" />
-            </label>
-            <button type="button" @onclick="() => JoinAsync(false)" disabled="@(_busy || !_ready)">Join</button>
-            <button type="button" class="secondary" @onclick="() => JoinAsync(true)" disabled="@(_busy || !_ready)">Watch</button>
-        </div>
+            <div class="lobby-join">
+                <label>
+                    Have a code?
+                    <input type="text" maxlength="10" placeholder="BAN-7Q3" @bind="_code" disabled="@(!_ready)" />
+                </label>
+                <button type="button" @onclick="() => JoinAsync(false)" disabled="@(_busy || !_ready)">Join</button>
+                <button type="button" class="secondary" @onclick="() => JoinAsync(true)" disabled="@(_busy || !_ready)">Watch</button>
+            </div>
+
+            <p class="lobby-hint">No one around? <a href="/solo">Play the computer</a>.</p>
+        }
 
         @if (_error is { } error)
         {
@@ -93,6 +103,10 @@ else
     /// <summary>A "come and watch" link, which must never claim a playing seat.</summary>
     [Parameter]
     public bool InitialWatch { get; set; }
+
+    /// <summary>Which lobby to present. Solo and online are separate routes so neither is buried.</summary>
+    [Parameter]
+    public LobbyMode Mode { get; set; } = LobbyMode.Online;
 
     private string JoinUrl => $"{Nav.BaseUri}online?code={_session?.GameCode}";
 

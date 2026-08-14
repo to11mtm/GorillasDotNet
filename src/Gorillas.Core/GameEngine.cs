@@ -79,9 +79,9 @@ public static class GameEngine
             return Decision.Reject("It is not that player's turn.");
         }
 
-        if (double.IsNaN(command.AngleDegrees) || command.AngleDegrees < 0 || command.AngleDegrees > 90)
+        if (double.IsNaN(command.AngleDegrees) || command.AngleDegrees < 0 || command.AngleDegrees >= 180)
         {
-            return Decision.Reject("Angle must be between 0 and 90 degrees.");
+            return Decision.Reject("Angle must be between 0 and 180 degrees.");
         }
 
         if (double.IsNaN(command.Velocity) || command.Velocity <= 0 || command.Velocity > state.Settings.MaxVelocity)

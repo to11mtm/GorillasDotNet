@@ -72,7 +72,7 @@ public sealed class GorillaAi(AiDifficulty difficulty, IRandomSource random)
         var angle = solution.AngleDegrees + (Gaussian() * angleError);
 
         return new AimSolution(
-            Math.Clamp(angle, 1, 89),
+            Math.Clamp(angle, 1, 179),
             Math.Clamp(velocity, 1, state.Settings.MaxVelocity),
             solution.Miss);
     }

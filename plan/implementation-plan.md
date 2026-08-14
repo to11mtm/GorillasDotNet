@@ -206,3 +206,29 @@ Auto-join runs from `OnAfterRenderAsync`, which — unlike an event handler — 
 re-render. The session was created but the UI stayed on the lobby. Fixed by requesting a render
 explicitly once the join settles.
 
+## Playtest feedback round ✅ DONE
+
+20. ✅ **Board sizing.** The online board rendered at 368x230 against the hot-seat board's
+    956x598. Cause: `.gorillas-shell` uses `margin: 0 auto`, and inside a flex *column* parent
+    (the online view) an auto cross-axis margin defeats `align-items: stretch`, so the shell
+    collapsed to its content width. Fixed with an explicit `width: 100%`. The canvas is now also
+    capped by available viewport height, so it grows to fill the window without pushing the aim
+    controls off screen — 800px on a 900px-tall window, 1096px on a 1200px-tall one.
+21. ✅ **Discoverability.** Playing the computer was buried inside the online lobby, making it
+    look multiplayer-only. It now has its own `/solo` route, a card on a redesigned home page
+    alongside online / hot seat / replays, and a persistent nav bar. The online and solo lobbies
+    each cross-link to the other.
+22. ✅ **Angles beyond 90 degrees.** Throws may now be aimed up to 179 degrees, lobbing the
+    banana back over the gorilla's own shoulder — the play that rescues a shot in a strong
+    headwind or over a tall neighbouring tower.
+
+Notes on wide angles:
+- The physics needed no change: `cos` of an obtuse angle is already negative, so the horizontal
+  component reverses naturally.
+- The *launch point* did need changing. It was offset by the gorilla's facing, so a backwards
+  throw would have started inside its own thrower. It now follows the sign of the horizontal
+  velocity.
+- The AI searches the full 8–172 degree range, so it will use a backwards lob when the wind
+  favours it. Coarse-pass step sizes were widened to keep the doubled search space roughly the
+  same cost.
+

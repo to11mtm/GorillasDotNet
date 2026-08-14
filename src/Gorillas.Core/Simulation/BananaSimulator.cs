@@ -35,14 +35,25 @@ public static class BananaSimulator
         double wind)
     {
         var thrower = gorillas[slot];
-        var direction = DirectionFor(slot);
+        var facing = DirectionFor(slot);
         var radians = angleDegrees * Math.PI / 180.0;
         var speed = Math.Clamp(velocity, 0, settings.MaxVelocity);
 
-        var position = thrower.ThrowOrigin(settings, direction);
         var velocityVector = new Vec2(
-            Math.Cos(radians) * speed * direction,
+            Math.Cos(radians) * speed * facing,
             Math.Sin(radians) * speed);
+
+        // Angles beyond 90 degrees lob the banana back over the gorilla's own shoulder, so the
+        // launch point must move to whichever side it is actually travelling towards —
+        // otherwise a backwards throw starts inside its own thrower.
+        var launchSide = velocityVector.X switch
+        {
+            > 0 => 1,
+            < 0 => -1,
+            _ => facing,
+        };
+
+        var position = thrower.ThrowOrigin(settings, launchSide);
 
         var points = new List<Vec2> { position };
         var dt = settings.TimeStep;

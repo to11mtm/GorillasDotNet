@@ -128,7 +128,7 @@ public class GameEngineTests
 
     [Theory]
     [InlineData(-1, 50)]
-    [InlineData(91, 50)]
+    [InlineData(180, 50)]
     [InlineData(45, 0)]
     [InlineData(45, 1_000)]
     [InlineData(double.NaN, 50)]
