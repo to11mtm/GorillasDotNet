@@ -5,12 +5,15 @@
 
 <div class="page-intro">
     <h1>Online</h1>
-    <p>Create a game and share the code, or join a friend. Watchers welcome.</p>
+    <p>Create a game and share the link, or join a friend. Watchers welcome.</p>
 </div>
 
-<OnlineGame InitialCode="@Code" />
+<OnlineGame InitialCode="@Code" InitialWatch="@(Watch == "1")" />
 
 @code {
     [SupplyParameterFromQuery(Name = "code")]
     public string? Code { get; set; }
+
+    [SupplyParameterFromQuery(Name = "watch")]
+    public string? Watch { get; set; }
 }

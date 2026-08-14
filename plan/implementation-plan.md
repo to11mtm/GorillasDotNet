@@ -174,7 +174,35 @@ The form now stays disabled until the first interactive render. Akka's own analy
 also caught an uncancelled scheduled message that would have leaked; fixed with `IWithTimers`.
 
 
-## Phase 6 — Polish
+## Phase 6 — Polish (in progress)
 
-15. Sound, modern theme option, mobile/touch input, keyboard accessibility, shareable match
-    links, leaderboards, CI build and test workflow.
+17. ✅ **Shareable links.** `/online?code=BAN-7Q3` with copy-to-clipboard for both an invite and
+    a watch link (`&watch=1`). Following an invite auto-joins when a nickname is remembered.
+18. ✅ **Sound.** Synthesised with the Web Audio API — no audio assets are shipped.
+19. Still to do: modern theme option, touch input, keyboard accessibility, leaderboards,
+    CI build and test workflow.
+
+### Shareable links — notes
+- An invite link *claims a seat*, so it never auto-joins without a known nickname; a nameless
+  visitor gets the code prefilled and is asked to name themselves first. The watch link never
+  claims a seat, so it is safe to post publicly.
+- Clipboard uses the async API where available and falls back to a hidden textarea, because the
+  async API needs a secure context — exactly what plain-HTTP LAN play lacks.
+
+### Sound — notes
+- Everything is generated at runtime (oscillators and filtered noise): a falling whistle for the
+  flight, a filtered noise burst for impacts with a deeper hit variant, and an arpeggio fanfare.
+  This keeps the repository asset-free and suits the chunky retro look.
+- Audio only ever fires from the live animation path, so a client catching up after a reconnect
+  is silent by construction rather than by special-casing. Covered by a test asserting a
+  reconnect replays exactly zero sounds.
+- The fanfare is driven off `GamePhase` transitions rather than events, for the same reason.
+- Playback speed scales sound alongside the animation, so replays stay in sync at 4x.
+- Browsers block audio before a user gesture, so the module unlocks on the first pointer or key
+  event and degrades silently if no `AudioContext` is available.
+
+### Bug found and fixed
+Auto-join runs from `OnAfterRenderAsync`, which — unlike an event handler — does not trigger a
+re-render. The session was created but the UI stayed on the lobby. Fixed by requesting a render
+explicitly once the join settles.
+

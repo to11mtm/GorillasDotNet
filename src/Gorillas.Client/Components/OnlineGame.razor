@@ -50,6 +50,12 @@ else
             <span class="link @ConnectionClass">@ConnectionLabel</span>
         </div>
 
+        <div class="share-bar">
+            <input type="text" readonly value="@JoinUrl" onfocus="this.select()" />
+            <button type="button" @onclick="() => CopyAsync(JoinUrl)">@(_copied == JoinUrl ? "Copied" : "Copy invite")</button>
+            <button type="button" class="secondary" @onclick="() => CopyAsync(WatchUrl)">@(_copied == WatchUrl ? "Copied" : "Copy watch link")</button>
+        </div>
+
         <GorillasBoard Session="_session" />
 
         @if (_session.Participants.Count > 0)
@@ -70,17 +76,27 @@ else
 @code {
     private NetworkGameSession? _session;
     private IJSObjectReference? _identity;
+    private IJSObjectReference? _share;
     private string _playerId = string.Empty;
     private string _nickname = string.Empty;
     private string _code = string.Empty;
     private AiDifficulty _difficulty = AiDifficulty.Normal;
     private string? _error;
+    private string? _copied;
     private bool _busy;
     private bool _ready;
 
     /// <summary>Set from the URL so a shared link drops straight into the right game.</summary>
     [Parameter]
     public string? InitialCode { get; set; }
+
+    /// <summary>A "come and watch" link, which must never claim a playing seat.</summary>
+    [Parameter]
+    public bool InitialWatch { get; set; }
+
+    private string JoinUrl => $"{Nav.BaseUri}online?code={_session?.GameCode}";
+
+    private string WatchUrl => $"{JoinUrl}&watch=1";
 
     private string RoleLabel => _session?.IsSpectator == true ? "Watching" : $"Seat {(_session?.MySlot ?? 0) + 1}";
 
@@ -102,6 +118,7 @@ else
         }
 
         _identity = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Gorillas.Client/gorillas-identity.js");
+        _share = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Gorillas.Client/gorillas-share.js");
         _playerId = await _identity.InvokeAsync<string>("playerId");
 
         var remembered = await _identity.InvokeAsync<string>("nickname");
@@ -119,6 +136,41 @@ else
         // is silently discarded on the first interactive render, so the form stays disabled
         // until we know we are live.
         _ready = true;
+        StateHasChanged();
+
+        await TryAutoJoinAsync();
+    }
+
+    /// <summary>
+    /// Follows a shared link straight into the game, but only once we know what to call the
+    /// player — a join claims a seat, so it must not happen under a placeholder name.
+    /// </summary>
+    private async Task TryAutoJoinAsync()
+    {
+        if (string.IsNullOrWhiteSpace(InitialCode) || _session is not null)
+        {
+            return;
+        }
+
+        if (!InitialWatch && string.IsNullOrWhiteSpace(_nickname))
+        {
+            _error = "Pick a nickname, then join the game.";
+            StateHasChanged();
+            return;
+        }
+
+        await JoinAsync(InitialWatch);
+    }
+
+    private async Task CopyAsync(string url)
+    {
+        _copied = _share is not null && await _share.InvokeAsync<bool>("copy", url) ? url : null;
+
+        if (_copied is null)
+        {
+            _error = "Could not copy automatically — select the link and copy it manually.";
+        }
+
         StateHasChanged();
     }
 
@@ -174,6 +226,10 @@ else
         finally
         {
             _busy = false;
+
+            // Auto-join runs from OnAfterRenderAsync, which — unlike an event handler — does
+            // not re-render automatically, so the swap to the board must be requested here.
+            StateHasChanged();
         }
     }
 
@@ -189,6 +245,18 @@ else
             try
             {
                 await _identity.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // Circuit already gone.
+            }
+        }
+
+        if (_share is not null)
+        {
+            try
+            {
+                await _share.DisposeAsync();
             }
             catch (JSDisconnectedException)
             {
