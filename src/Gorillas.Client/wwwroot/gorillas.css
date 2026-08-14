@@ -2,7 +2,10 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    max-width: 960px;
+    /* width:100% matters: inside a flex column parent (the online view) an auto cross-axis
+       margin defeats align-items:stretch, which collapsed the board to its content width. */
+    width: 100%;
+    max-width: 1100px;
     margin: 0 auto;
     font-family: "Consolas", "Courier New", monospace;
     color: #e8e8e8;
@@ -34,11 +37,17 @@
     background: #000038;
     border: 2px solid #2b2b50;
     line-height: 0;
+    display: flex;
+    justify-content: center;
 }
 
 .gorillas-canvas {
     display: block;
     width: 100%;
+    /* Cap the width by the space left below the surrounding chrome, so the board grows to fill
+       the window without ever pushing the aim controls off screen. 1.6 is the 320:200 ratio,
+       and the reserve is sized for the busiest view (online, which adds the share bar). */
+    max-width: min(100%, calc((100vh - 25rem) * 1.6));
     height: auto;
     aspect-ratio: 320 / 200;
     image-rendering: pixelated;
@@ -109,7 +118,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    max-width: 960px;
+    width: 100%;
+    max-width: 1100px;
     margin: 0 auto;
     font-family: "Consolas", "Courier New", monospace;
     color: #e8e8e8;
@@ -233,7 +243,7 @@
 }
 
 .replay-loading {
-    max-width: 960px;
+    max-width: 1100px;
     margin: 0 auto;
     color: #8a8ab0;
     font-family: "Consolas", "Courier New", monospace;
@@ -241,7 +251,7 @@
 
 .replay-table {
     width: 100%;
-    max-width: 960px;
+    max-width: 1100px;
     margin: 0 auto;
     border-collapse: collapse;
     font-family: "Consolas", "Courier New", monospace;
@@ -333,4 +343,14 @@
 .gorillas-hud button.mute:hover {
     color: #ffe94a;
     border-color: #ffe94a;
+}
+
+.lobby-hint {
+    margin: 0;
+    color: #8a8ab0;
+    font-size: 0.8rem;
+}
+
+.lobby-hint a {
+    color: #ffe94a;
 }

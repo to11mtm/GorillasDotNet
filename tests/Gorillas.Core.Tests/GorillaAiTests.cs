@@ -169,7 +169,7 @@ public class GorillaAiTests
             {
                 var shot = ai.ChooseShot(state, state.ActiveSlot)!;
 
-                Assert.InRange(shot.AngleDegrees, 1, 89);
+                Assert.InRange(shot.AngleDegrees, 1, 179);
                 Assert.InRange(shot.Velocity, 1, state.Settings.MaxVelocity);
             }
         }

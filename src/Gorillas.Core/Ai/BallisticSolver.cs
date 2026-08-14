@@ -27,15 +27,15 @@ public static class BallisticSolver
             return null;
         }
 
-        var best = Search(state, slot, 10, 86, 5, 10, state.Settings.MaxVelocity, 5, null);
+        var best = Search(state, slot, 8, 172, 6, 10, state.Settings.MaxVelocity, 7, null);
         if (best is null)
         {
             return null;
         }
 
         // Two refinement passes around the coarse winner, each an order finer.
-        best = Search(state, slot, best.AngleDegrees - 6, best.AngleDegrees + 6, 1.5,
-            best.Velocity - 8, best.Velocity + 8, 1.5, best);
+        best = Search(state, slot, best.AngleDegrees - 7, best.AngleDegrees + 7, 1.5,
+            best.Velocity - 9, best.Velocity + 9, 1.5, best);
 
         best = Search(state, slot, best!.AngleDegrees - 1.5, best.AngleDegrees + 1.5, 0.3,
             best.Velocity - 2, best.Velocity + 2, 0.3, best);
@@ -83,7 +83,7 @@ public static class BallisticSolver
         var best = incumbent;
 
         angleFrom = Math.Max(angleFrom, 1);
-        angleTo = Math.Min(angleTo, 89);
+        angleTo = Math.Min(angleTo, 179);
         velocityFrom = Math.Max(velocityFrom, 1);
         velocityTo = Math.Min(velocityTo, state.Settings.MaxVelocity);
 

@@ -82,7 +82,7 @@ public class BallisticSolverTests
             var solution = BallisticSolver.Solve(state, state.ActiveSlot);
 
             Assert.NotNull(solution);
-            Assert.InRange(solution.AngleDegrees, 1, 89);
+            Assert.InRange(solution.AngleDegrees, 1, 179);
             Assert.InRange(solution.Velocity, 0.1, state.Settings.MaxVelocity);
 
             var decision = GameEngine.Decide(
