@@ -112,18 +112,34 @@ public sealed class ReplaySession : IGameSession
 
     public void SeekToEnd() => SeekTo(_log.Count);
 
-    /// <summary>Jump straight to the next or previous shot, the interesting moments in a match.</summary>
+    /// <summary>
+    /// Jump to the next or previous shot — the interesting moments in a match. Anchored on the
+    /// cursor rather than a count of shots played, because sitting exactly on a shot's first
+    /// event means it has not been counted as played yet, which used to pin this to shot one.
+    /// </summary>
     public void SeekToShot(int delta)
     {
-        var current = ShotsPlayed + delta - 1;
-        var target = Math.Clamp(current, 0, Math.Max(_throwIndices.Count - 1, 0));
-
         if (_throwIndices.Count == 0)
         {
             return;
         }
 
-        SeekTo(_throwIndices[target]);
+        if (delta > 0)
+        {
+            var next = _throwIndices.Where(index => index > Cursor).ToList();
+
+            if (next.Count == 0)
+            {
+                SeekToEnd();
+                return;
+            }
+
+            SeekTo(next[0]);
+            return;
+        }
+
+        var previous = _throwIndices.Where(index => index < Cursor).ToList();
+        SeekTo(previous.Count == 0 ? 0 : previous[^1]);
     }
 
     public void SeekTo(int cursor)

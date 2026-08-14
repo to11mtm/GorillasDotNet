@@ -228,6 +228,61 @@ public class ReplaySessionTests
         Assert.IsType<BananaThrown>(Log[session.Cursor].Event);
     }
 
+    /// <summary>Repeated presses used to stay pinned to the first shot.</summary>
+    [Fact]
+    public void RepeatedNextShotJumpsVisitEveryShotInOrder()
+    {
+        var session = new ReplaySession(Log);
+        var visited = new List<int>();
+
+        for (var i = 0; i < session.ShotCount; i++)
+        {
+            session.SeekToShot(1);
+            visited.Add(session.Cursor);
+        }
+
+        Assert.Equal(session.ShotCount, visited.Distinct().Count());
+        Assert.Equal(visited.OrderBy(c => c), visited);
+        Assert.All(visited, cursor => Assert.IsType<BananaThrown>(Log[cursor].Event));
+    }
+
+    [Fact]
+    public void NextShotPastTheLastOneRunsToTheEnd()
+    {
+        var session = new ReplaySession(Log);
+
+        for (var i = 0; i < session.ShotCount + 2; i++)
+        {
+            session.SeekToShot(1);
+        }
+
+        Assert.True(session.AtEnd);
+    }
+
+    [Fact]
+    public void PreviousShotWalksBackThroughTheShots()
+    {
+        var session = new ReplaySession(Log);
+        session.SeekToEnd();
+
+        session.SeekToShot(-1);
+        var last = session.Cursor;
+        Assert.IsType<BananaThrown>(Log[last].Event);
+
+        session.SeekToShot(-1);
+        Assert.True(session.Cursor < last);
+    }
+
+    [Fact]
+    public void PreviousShotFromTheStartStaysAtTheStart()
+    {
+        var session = new ReplaySession(Log);
+
+        session.SeekToShot(-1);
+
+        Assert.Equal(0, session.Cursor);
+    }
+
     [Fact]
     public void SeekingCancelsPlayback()
     {
