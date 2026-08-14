@@ -232,3 +232,16 @@ Notes on wide angles:
   favours it. Coarse-pass step sizes were widened to keep the doubled search space roughly the
   same cost.
 
+## Documentation ✅ DONE
+
+23. ✅ `README.md`: description, feature list, real captured screenshots (`docs/images/`),
+    getting started, configuration, architecture overview and notable decisions.
+
+### Bug found while capturing screenshots
+The replay "next shot" button was pinned to the first shot — pressing it repeatedly never
+advanced. `SeekToShot` was anchored on a count of shots *played*, but sitting exactly on a
+shot's first event means it has not been counted yet, so the arithmetic resolved to the same
+target every time. Re-anchored on the cursor: next/previous now find the nearest throw strictly
+after/before the current position. Covered by four new tests, including one that walks every
+shot in order.
+
