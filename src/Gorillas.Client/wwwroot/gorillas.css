@@ -295,3 +295,42 @@
     font-family: inherit;
     font-size: 1rem;
 }
+
+.share-bar {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.share-bar input {
+    flex: 1 1 18rem;
+    padding: 0.35rem 0.5rem;
+    background: #101024;
+    border: 2px solid #2b2b50;
+    color: #8a8ab0;
+    font-family: inherit;
+    font-size: 0.8rem;
+}
+
+.share-bar button {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.75rem;
+}
+
+.gorillas-hud button.mute {
+    background: transparent;
+    border: 2px solid #2b2b50;
+    color: #8a8ab0;
+    font-family: inherit;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.15rem 0.6rem;
+    cursor: pointer;
+}
+
+.gorillas-hud button.mute:hover {
+    color: #ffe94a;
+    border-color: #ffe94a;
+}

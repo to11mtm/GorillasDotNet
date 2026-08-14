@@ -4,6 +4,7 @@
     <File Path="Directory.Packages.props" />
     <File Path="plan/base-request.md" />
     <File Path="plan/implementation-plan.md" />
+    <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Gorillas.Actors/Gorillas.Actors.csproj" />

@@ -1,3 +1,5 @@
+import * as audio from './gorillas-audio.js';
+
 const VIRTUAL_WIDTH = 320;
 const VIRTUAL_HEIGHT = 200;
 const EXPLOSION_SECONDS = 0.55;
@@ -74,8 +76,12 @@ export function playThrow(canvas, animation, dotNetRef, speed) {
         exploding: animation.impactRadius > 0 || animation.isHit,
         dotNetRef,
         speed: speed > 0 ? speed : 1,
+        blasted: false,
         lastTimestamp: 0,
     };
+
+    const flightSeconds = (animation.points.length - 1) * animation.stepSeconds;
+    audio.whoosh(flightSeconds, state.animation.speed);
 
     state.frameHandle = requestAnimationFrame((timestamp) => step(state, timestamp));
 }
@@ -117,6 +123,11 @@ function step(state, timestamp) {
     if (!finishedFlight) {
         animation.elapsed += delta;
     } else if (animation.exploding) {
+        if (!animation.blasted) {
+            animation.blasted = true;
+            audio.impact(animation.data.isHit, animation.speed);
+        }
+
         animation.explosionElapsed += delta;
     }
 

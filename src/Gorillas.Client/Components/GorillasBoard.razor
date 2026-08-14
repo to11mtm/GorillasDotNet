@@ -15,6 +15,9 @@
     <div class="gorillas-hud">
         <span class="wind">Wind @WindLabel</span>
         <span class="status">@StatusText</span>
+        <button type="button" class="mute" @onclick="ToggleMuteAsync" title="@(_muted ? "Unmute" : "Mute")">
+            @(_muted ? "\U0001F507 sound off" : "\U0001F50A sound on")
+        </button>
     </div>
 
     @if (ShowAimControls)
@@ -50,9 +53,12 @@
 
     private ElementReference _canvas;
     private IJSObjectReference? _module;
+    private IJSObjectReference? _audio;
     private DotNetObjectReference<GorillasBoard>? _selfRef;
     private bool _animating;
     private bool _initialised;
+    private bool _muted;
+    private GamePhase _lastPhase = GamePhase.WaitingForPlayers;
 
     [Parameter]
     [EditorRequired]
@@ -124,19 +130,58 @@
         if (firstRender)
         {
             _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Gorillas.Client/gorillas-renderer.js");
+            _audio = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Gorillas.Client/gorillas-audio.js");
             _selfRef = DotNetObjectReference.Create(this);
+
             await _module.InvokeVoidAsync("init", _canvas);
+
+            // Browsers block audio until a gesture, so the module listens for the first one.
+            await _audio.InvokeVoidAsync("install");
+            _muted = await _audio.InvokeAsync<bool>("isMuted");
+
             _initialised = true;
+            _lastPhase = Session.State.Phase;
             await PushSceneAsync();
+            StateHasChanged();
         }
     }
 
     /// <summary>Session changes can arrive from a background SignalR thread, so marshal them.</summary>
     private void OnSessionChanged() => _ = InvokeAsync(async () =>
     {
+        await PlayPhaseSoundAsync();
         await PushSceneAsync();
         StateHasChanged();
     });
+
+    /// <summary>
+    /// Fires the fanfare on the transition into a round or match win. Driven off phase changes
+    /// rather than events, so a client catching up silently never triggers a burst of them.
+    /// </summary>
+    private async Task PlayPhaseSoundAsync()
+    {
+        var phase = Session.State.Phase;
+
+        if (phase == _lastPhase || _audio is null)
+        {
+            return;
+        }
+
+        _lastPhase = phase;
+
+        if (phase is GamePhase.RoundOver or GamePhase.MatchOver)
+        {
+            await _audio.InvokeVoidAsync("fanfare", phase == GamePhase.MatchOver);
+        }
+    }
+
+    private async Task ToggleMuteAsync()
+    {
+        if (_audio is not null)
+        {
+            _muted = await _audio.InvokeAsync<bool>("setMuted", !_muted);
+        }
+    }
 
     private void OnThrowStarted(ThrowAnimation animation) => _ = InvokeAsync(async () =>
     {
@@ -231,6 +276,18 @@
             catch (JSDisconnectedException)
             {
                 // The circuit is already gone; nothing to clean up on the client.
+            }
+        }
+
+        if (_audio is not null)
+        {
+            try
+            {
+                await _audio.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // The circuit is already gone.
             }
         }
 
